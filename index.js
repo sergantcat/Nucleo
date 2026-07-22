@@ -55,10 +55,28 @@ client.once('ready', () => {
 });
 
 client.on('interactionCreate', async interaction => {
+    if (interaction.isButton() || interaction.isModalSubmit()) {
+        const affiliateCommand = client.commands.get('post-affiliate');
+        if (affiliateCommand?.handleApplicationInteractions) {
+            await affiliateCommand.handleApplicationInteractions(interaction);
+        }
+        return;
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
+
+    const requiredPermissions = command.requiredPermissions ?? command.data?.defaultMemberPermissions ?? command.data?.toJSON?.().default_member_permissions;
+
+    if (requiredPermissions && interaction.inGuild() && !interaction.memberPermissions?.has(requiredPermissions)) {
+        await interaction.reply({
+            content: 'You do not have permission to use this command.',
+            ephemeral: true
+        });
+        return;
+    }
 
     try {
         await command.execute(interaction);
