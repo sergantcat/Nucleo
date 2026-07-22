@@ -1,7 +1,6 @@
 const {
     SlashCommandBuilder,
     EmbedBuilder,
-    PermissionFlagsBits,
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
@@ -10,11 +9,12 @@ const {
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('embed3')
-        .setDescription('A cat embed with a button')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        .setName('embed')
+        .setDescription('A cat embed with a button'),
 
     async execute(interaction) {
+        await interaction.deferReply();
+
         const embed = new EmbedBuilder()
             .setTitle('MMM Button Press it!')
             .setDescription('Press the button and I will send you a cat gif!')
@@ -28,10 +28,11 @@ module.exports = {
 
         const row = new ActionRowBuilder().addComponents(button);
 
-        const message = await interaction.reply({
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        const message = await interaction.editReply({
             embeds: [embed],
-            components: [row],
-            fetchReply: true
+            components: [row]
         });
 
         const collector = message.createMessageComponentCollector({
@@ -45,7 +46,7 @@ module.exports = {
             try {
                 const catEmbed = new EmbedBuilder()
                     .setTitle('YOU PRESSED IT :D Now here is a Gif')
-                    .setImage('https://cataas.com/cat/gif')
+                    .setImage('https://tenor.com/view/cat-gif-15677826050545973054')
                     .setColor('#48ff00')
                     .setAuthor({
                         name: interaction.user.tag,
@@ -63,5 +64,3 @@ module.exports = {
         });
     }
 };
-
-    
