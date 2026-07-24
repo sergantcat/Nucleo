@@ -121,9 +121,9 @@ const affiliateCommand = {
 // ─────────────────────────────────────────────
 async function postApplicationEmbed(channel) {
   const embed = new EmbedBuilder()
-    .setTitle("FSRI Parrtnership Application")
+    .setTitle("FSRI Partnership Application")
     .setDescription(
-      'Partnership Applications Here You may Open An Application Form ')
+      'By Pressing This Button You Will open An Modal To apply For partnership With FSRI')
     .setColor(BlackButNotDark);
 
   const row = new ActionRowBuilder().addComponents(
