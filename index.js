@@ -1,3 +1,5 @@
+
+
 require('dotenv').config();
 
 const {
@@ -9,11 +11,18 @@ const {
 } = require('discord.js');
 
 const fs = require('fs');
+const { reportStatus } = require('./statusReporter.js');
 const path = require('path');
+const { handleDmReplyButton, handleDmReplyModal } = require('./handlers/dmReplyHandler');
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds]
 });
+
+client.on('error', (err) => console.error('Client error:', err));
+client.on('shardError', (err) => console.error('Shard error:', err));
+client.on('shardDisconnect', () => console.log('Shard disconnected'));
+client.on('shardReconnecting', () => console.log('Shard reconnecting...'));
 
 client.commands = new Collection();
 const commands = [];
@@ -49,16 +58,31 @@ const rest = new REST({ version: '10' }).setToken(token);
         console.error('Failed to register slash commands:', error);
     }
 })();
-
 client.once('ready', () => {
-    console.log(`${client.user.tag} Startup Successful!`);
+    console.log('Nucleo is online!');
+    reportStatus('nucleo', 'online');
+    setInterval(() => reportStatus('nucleo', 'online'), 60000);
+});
+process.on('SIGINT', async () => {
+    await reportStatus('nucleo', 'offline');
+    process.exit();
 });
 
 client.on('interactionCreate', async interaction => {
+    console.log('Interaction received:', interaction.type, interaction.commandName ?? interaction.customId ?? '(unknown)');
+
+    // DM reply flow (button in a user's DMs, and the modal it opens)
+    if (interaction.isButton() && interaction.customId.startsWith('dmreply_')) {
+        return handleDmReplyButton(interaction);
+    }
+    if (interaction.isModalSubmit() && interaction.customId.startsWith('dmreplymodal_')) {
+        return handleDmReplyModal(interaction);
+    }
+
     if (interaction.isButton() || interaction.isModalSubmit()) {
-        const affiliateCommand = client.commands.get('post-affiliate');
-        if (affiliateCommand?.handleApplicationInteractions) {
-            await affiliateCommand.handleApplicationInteractions(interaction);
+        const partnershipCommand = client.commands.get('post-partnership');
+        if (partnershipCommand?.handleApplicationInteractions) {
+            await partnershipCommand.handleApplicationInteractions(interaction);
         }
         return;
     }

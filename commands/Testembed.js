@@ -46,7 +46,7 @@ module.exports = {
             try {
                 const catEmbed = new EmbedBuilder()
                     .setTitle('YOU PRESSED IT :D Now here is a Gif')
-                    .setImage('https://tenor.com/view/cat-gif-15677826050545973054')
+                    .setImage('https://klipy.com/gifs/cat-flabbergasted')
                     .setColor('#48ff00')
                     .setAuthor({
                         name: interaction.user.tag,
