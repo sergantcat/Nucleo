@@ -14,12 +14,17 @@ module.exports = {
         .setMaxLength(1000)
     ),
     async execute(interaction) {
+<<<<<<< HEAD
     const report = interaction.options.getString('issue', true);
+=======
+    const report = interaction.options.getString('issue',true);
+>>>>>>> 862a144a0cb9a2e3dfe73bf0e50243600dc9efef
 
     const embed = new EmbedBuilder()
     .setTitle('Nucleo error report by ' + interaction.user.tag)
     .setColor(0xED4245)
     .addFields(
+<<<<<<< HEAD
         { name: 'Issue:', value: report, inline: false },
     )
     .setTimestamp();
@@ -35,6 +40,20 @@ module.exports = {
         await interaction.reply({
             content: 'Your Report has been noted. Erycd14 has been notified.',
             ephemeral: true
+=======
+        {name: 'Issue:', value: issue, inline: false},
+    )
+    .setTimestamp()
+    .setFooter({ text: interaction.guild.name, iconURL: interaction.guild.IconURL()})
+
+    try{
+        const owner = await interaction.client.users.fetch(OWNER_ID);
+        await owner.send({embeds:[embed]});
+
+        await interaction.reply({
+            content:'Your Report has been Noted Erycd14 has been Notified',
+            ephermeral: true 
+>>>>>>> 862a144a0cb9a2e3dfe73bf0e50243600dc9efef
         });
     } catch (err){
         console.error('Failed to notify Erycd',err);

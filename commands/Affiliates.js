@@ -169,7 +169,15 @@ function buildPartnershipPromptComponents() {
 }
 
 async function postApplicationEmbed(channel) {
+<<<<<<< HEAD
   const container = buildPartnershipPromptComponents();
+=======
+  const embed = new EmbedBuilder()
+    .setTitle("FSRI Partnership Application")
+    .setDescription(
+      'By Pressing This Button You Will open An Modal To apply For partnership With FSRI')
+    .setColor(BlackButNotDark);
+>>>>>>> 862a144a0cb9a2e3dfe73bf0e50243600dc9efef
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
