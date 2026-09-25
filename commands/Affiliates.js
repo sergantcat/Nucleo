@@ -23,13 +23,19 @@ const {
   ButtonBuilder,
   ButtonStyle,
   ChannelType,
+  ContainerBuilder,
   EmbedBuilder,
   MessageFlags,
   ModalBuilder,
   PermissionFlagsBits,
+  SectionBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
   SlashCommandBuilder,
+  TextDisplayBuilder,
   TextInputBuilder,
   TextInputStyle,
+  ThumbnailBuilder,
 } = require("discord.js");
 
 // ─────────────────────────────────────────────
@@ -37,12 +43,25 @@ const {
 // ─────────────────────────────────────────────
 const REVIEW_CHANNEL_ID = process.env.REVIEW_CHANNEL_ID?.trim();
 const REVIEW_ROLE_ID = process.env.REVIEW_ROLE_ID?.trim();
+const FORUM_CHANNEL_ID = process.env.FORUM_CHANNEL_ID?.trim();
 
 function getReviewConfig() {
   return {
     reviewChannelId: REVIEW_CHANNEL_ID,
     reviewRoleId: REVIEW_ROLE_ID,
   };
+}
+
+function getForumConfig() {
+  return {
+    forumChannelId: FORUM_CHANNEL_ID,
+  };
+}
+
+// Pulls a field's value back out of the review embed by its field name.
+// Used when we need the raw data again later (e.g. building the forum post on accept).
+function getEmbedFieldValue(embed, name) {
+  return embed?.fields?.find((f) => f.name === name)?.value;
 }
 
 // Custom ID prefixes (do not change unless you also change the parsing below)
@@ -78,12 +97,12 @@ async function sendApplicantDm(interaction, message) {
   return false;
 }
 
-const affiliateCommand = {
+const partnershipCommand = {
   requiredPermissions: PermissionFlagsBits.Administrator,
 
   data: new SlashCommandBuilder()
-    .setName("post-affiliate")
-    .setDescription("Post the affiliate application embed")
+    .setName("post-partnership")
+    .setDescription("Post the partnership application prompt")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(interaction) {
@@ -105,54 +124,93 @@ const affiliateCommand = {
     const { reviewChannelId, reviewRoleId } = getReviewConfig();
     if (!reviewChannelId || !reviewRoleId) {
       return interaction.reply({
-        content: "Affiliate review settings are not configured. Set REVIEW_CHANNEL_ID and REVIEW_ROLE_ID in your .env file.",
+        content: "Partnership review settings are not configured. Set REVIEW_CHANNEL_ID and REVIEW_ROLE_ID in your .env file.",
         flags: MessageFlags.Ephemeral,
       });
     }
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     await postApplicationEmbed(interaction.channel);
-    await interaction.editReply({ content: "✅ Affiliate application embed posted." });
+    await interaction.editReply({ content: "✅ Partnership application prompt posted." });
   },
 };
 
 // ─────────────────────────────────────────────
 // 1. POST THE INITIAL EMBED (call this from a slash command, e.g. /post-application)
 // ─────────────────────────────────────────────
+function buildPartnershipPromptComponents() {
+  return new ContainerBuilder()
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent("## FSRI Partnership Programm 🤝")
+    )
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        "Hello Here you can Apply For partnerships with FSRI, By Partnering With Us you can Recive Some benefits Stated Below Also We Will be Happy If You Will Partner With Us."
+      )
+    )
+    .addSeparatorComponents(
+      new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small)
+    )
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        "### What Are The Benefits?\n- Announcments From Your Server Will get Posted in The Partnership Announcments Channel\n- Development And Other Sneek Peeks will be Posted in Partnerships Development channel\n- W.I.P You will also Recive A Headtag in game"
+      )
+    )
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        "\n- You can View The Requirements in the <#1523058659817689158> Channel."
+      )
+    )
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        "> Ready to begin? Tap the button below to submit your partnership application."
+      )
+    );
+}
+
 async function postApplicationEmbed(channel) {
-  const embed = new EmbedBuilder()
-    .setTitle("FSRI Parrtnership Application")
-    .setDescription(
-      'Partnership Applications Here You may Open An Application Form ')
-    .setColor(BlackButNotDark);
+  const container = buildPartnershipPromptComponents();
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(IDS.applyButton)
-      .setLabel("Apply Now")
-      .setEmoji("📝")
+      .setLabel("Apply")
+      .setEmoji({ id: "1532792685243400385", name: "partnership" })
       .setStyle(ButtonStyle.Primary)
   );
 
-  await channel.send({ embeds: [embed], components: [row] });
+  await channel.send({
+    components: [container, row],
+    flags: MessageFlags.IsComponentsV2,
+  });
 }
 
 // ─────────────────────────────────────────────
 // 2. MAIN INTERACTION ROUTER — call this inside client.on("interactionCreate", ...)
 // ─────────────────────────────────────────────
 async function handleApplicationInteractions(interaction) {
-  if (interaction.isButton()) {
-    if (interaction.customId === IDS.applyButton) return showApplicationModal(interaction);
-    if (interaction.customId.startsWith(IDS.accept)) return handleDecision(interaction, "accept");
-    if (interaction.customId.startsWith(IDS.denyReason)) return showDenyReasonModal(interaction);
-    if (interaction.customId.startsWith(IDS.deny) && !interaction.customId.startsWith(IDS.denyReason)) {
-      return handleDecision(interaction, "deny");
+  try {
+    if (interaction.isButton()) {
+      if (interaction.customId === IDS.applyButton) return showApplicationModal(interaction);
+      if (interaction.customId.startsWith(IDS.accept)) return handleDecision(interaction, "accept");
+      if (interaction.customId.startsWith(IDS.denyReason)) return showDenyReasonModal(interaction);
+      if (interaction.customId.startsWith(IDS.deny) && !interaction.customId.startsWith(IDS.denyReason)) {
+        return handleDecision(interaction, "deny");
+      }
     }
-  }
 
-  if (interaction.isModalSubmit()) {
-    if (interaction.customId === IDS.applyModal) return handleApplicationSubmit(interaction);
-    if (interaction.customId.startsWith(IDS.denyReasonModal)) return handleDenyReasonSubmit(interaction);
+    if (interaction.isModalSubmit()) {
+      if (interaction.customId === IDS.applyModal) return handleApplicationSubmit(interaction);
+      if (interaction.customId.startsWith(IDS.denyReasonModal)) return handleDenyReasonSubmit(interaction);
+    }
+  } catch (error) {
+    console.error("Partnership interaction failed:", error);
+
+    if (!interaction.replied && !interaction.deferred) {
+      try {
+        await interaction.reply({ content: "Something went wrong while processing that request.", flags: MessageFlags.Ephemeral });
+      } catch {}
+    }
   }
 }
 
@@ -160,17 +218,11 @@ async function handleApplicationInteractions(interaction) {
 // 3. SHOW THE APPLICATION MODAL
 // ─────────────────────────────────────────────
 async function showApplicationModal(interaction) {
-  const modal = new ModalBuilder().setCustomId(IDS.applyModal).setTitle("Server Affiliate Application");
+  const modal = new ModalBuilder().setCustomId(IDS.applyModal).setTitle("Partnership Application");
 
   const serverName = new TextInputBuilder()
     .setCustomId("server_name")
-    .setLabel("Your server Name")
-    .setStyle(TextInputStyle.Short)
-    .setRequired(true);
-
-  const memberCount = new TextInputBuilder()
-    .setCustomId("member_count")
-    .setLabel("Server Member Count")
+    .setLabel("Your server name")
     .setStyle(TextInputStyle.Short)
     .setRequired(true);
 
@@ -180,24 +232,30 @@ async function showApplicationModal(interaction) {
     .setStyle(TextInputStyle.Short)
     .setRequired(true);
 
-  const whyAffiliate = new TextInputBuilder()
-    .setCustomId("why_affiliate")
-    .setLabel("Why do you want to create a Partnership with us?")
-    .setStyle(TextInputStyle.Paragraph)
+  const memberCount = new TextInputBuilder()
+    .setCustomId("member_count")
+    .setLabel("Server member count")
+    .setStyle(TextInputStyle.Short)
     .setRequired(true);
 
-  const extra = new TextInputBuilder()
-    .setCustomId("extra_info")
-    .setLabel("Anything else we should know?")
+  const robloxGroupLink = new TextInputBuilder()
+    .setCustomId("roblox_group_link")
+    .setLabel("Roblox group link")
+    .setStyle(TextInputStyle.Short)
+    .setRequired(true);
+
+  const whyPartnership = new TextInputBuilder()
+    .setCustomId("why_partnership")
+    .setLabel("Why partner with us?")
     .setStyle(TextInputStyle.Paragraph)
-    .setRequired(false);
+    .setRequired(true);
 
   modal.addComponents(
     new ActionRowBuilder().addComponents(serverName),
     new ActionRowBuilder().addComponents(memberCount),
     new ActionRowBuilder().addComponents(inviteLink),
-    new ActionRowBuilder().addComponents(whyAffiliate),
-    new ActionRowBuilder().addComponents(extra)
+    new ActionRowBuilder().addComponents(robloxGroupLink),
+    new ActionRowBuilder().addComponents(whyPartnership)
   );
 
   await interaction.showModal(modal);
@@ -207,39 +265,55 @@ async function showApplicationModal(interaction) {
 // 4. HANDLE APPLICATION SUBMISSION -> post review embed with buttons
 // ─────────────────────────────────────────────
 async function handleApplicationSubmit(interaction) {
-  // Acknowledge immediately so Discord doesn't time out the interaction
-  // while we do the (potentially slower) work of fetching the channel and sending the embed.
-  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  try {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  } catch (error) {
+    if (error?.code !== 10062) {
+      console.error("Failed to defer application reply:", error);
+    }
+  }
 
   const serverName = interaction.fields.getTextInputValue("server_name");
   const memberCount = interaction.fields.getTextInputValue("member_count");
   const inviteLink = interaction.fields.getTextInputValue("invite_link");
-  const whyAffiliate = interaction.fields.getTextInputValue("why_affiliate");
-  const extraInfo = interaction.fields.getTextInputValue("extra_info") || "N/A";
+  const robloxGroupLink = interaction.fields.getTextInputValue("roblox_group_link");
+  const whyPartnership = interaction.fields.getTextInputValue("why_partnership");
+
+  // Pull the server icon straight from the invite instead of asking the applicant for a URL.
+  let serverIcon = null;
+  try {
+    const inviteCode = inviteLink.trim().split("/").pop();
+    const invite = await interaction.client.fetchInvite(inviteCode);
+    serverIcon = invite.guild?.iconURL({ size: 256 }) ?? null;
+  } catch (error) {
+    console.error("Could not resolve server icon from invite link:", error);
+  }
 
   const { reviewChannelId, reviewRoleId } = getReviewConfig();
   if (!reviewChannelId || !reviewRoleId) {
-    return interaction.editReply({ content: "Affiliate review settings are not configured. Set REVIEW_CHANNEL_ID and REVIEW_ROLE_ID in your .env file." });
+    return interaction.editReply?.({ content: "Partnership review settings are not configured. Set REVIEW_CHANNEL_ID and REVIEW_ROLE_ID in your .env file." });
   }
 
   const reviewChannel = await interaction.client.channels.fetch(reviewChannelId).catch(() => null);
   if (!reviewChannel || reviewChannel.type !== ChannelType.GuildText || !reviewChannel.isTextBased()) {
-    return interaction.editReply({ content: "Review channel is misconfigured. Contact an admin." });
+    return interaction.editReply?.({ content: "Review channel is misconfigured. Contact an admin." });
   }
 
   const reviewEmbed = new EmbedBuilder()
-    .setTitle("New PartnerShip Application")
-    .setColor(0xf1c40f)
+    .setTitle("🤝 New Partnership Application")
+    .setDescription("A new partnership request has been submitted and is awaiting review.")
+    .setColor(0xffc857)
     .addFields(
-      { name: "Applicant", value: `${interaction.user} (${interaction.user.id})` },
-      { name: "Server Name", value: serverName },
-      { name: "Member Count", value: memberCount },
-      { name: "Invite Link", value: inviteLink },
-      { name: "Why Affiliate?", value: whyAffiliate },
-      { name: "Extra Info", value: extraInfo },
-      { name: "Status", value: "Pending" }
+      { name: "Applicant", value: `${interaction.user} (${interaction.user.id})`, inline: false },
+      { name: "Server Name", value: serverName || "Not provided", inline: true },
+      { name: "Member Count", value: memberCount || "Not provided", inline: true },
+      { name: "Invite Link", value: inviteLink || "Not provided", inline: false },
+      { name: "Roblox Group Link", value: robloxGroupLink || "Not provided", inline: false },
+      { name: "Why Partnership?", value: whyPartnership || "Not provided", inline: false },
+      { name: "Status", value: "⏳ Pending Review", inline: false }
     )
-    .setThumbnail(interaction.user.displayAvatarURL())
+    .setThumbnail(serverIcon || interaction.user.displayAvatarURL({ size: 256, dynamic: true }))
+    .setFooter({ text: "FSRI Partnerships" })
     .setTimestamp();
 
   const row = new ActionRowBuilder().addComponents(
@@ -266,9 +340,14 @@ async function handleApplicationSubmit(interaction) {
     components: [row],
   });
 
-  // Store message ID in the button custom IDs for later reference
-  await interaction.editReply({
-    content: `Your application has been submitted! We'll review it shortly.`,
+  const confirmationEmbed = new EmbedBuilder()
+    .setTitle("✅ Partnership request received")
+    .setDescription("Thank you for reaching out. Your application has been submitted and our team will review it shortly.")
+    .setColor(0x2ecc71)
+    .setFooter({ text: "FSRI Partnerships" });
+
+  await interaction.editReply?.({
+    embeds: [confirmationEmbed],
   });
 }
 
@@ -279,7 +358,7 @@ async function showDenyReasonModal(interaction) {
   const userId = interaction.customId.split("_").pop();
   const modal = new ModalBuilder()
     .setCustomId(`${IDS.denyReasonModal}_${userId}`)
-    .setTitle("Deny Application with Reason");
+    .setTitle("Deny Partnership with Reason");
 
   const reason = new TextInputBuilder()
     .setCustomId("deny_reason")
@@ -296,59 +375,165 @@ async function showDenyReasonModal(interaction) {
 // 6. HANDLE DENY REASON SUBMISSION
 // ─────────────────────────────────────────────
 async function handleDenyReasonSubmit(interaction) {
-  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  if (interaction.replied || interaction.deferred) {
+    await interaction.followUp({ content: "Processing your decision...", flags: MessageFlags.Ephemeral });
+  } else {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  }
 
   const reason = interaction.fields.getTextInputValue("deny_reason");
   const messageId = interaction.message.id;
 
   // Update the review embed to show denial with reason
   const originalEmbed = interaction.message.embeds[0];
+  const statusIndex = originalEmbed.fields.findIndex((f) => f.name === "Status");
   const updatedEmbed = EmbedBuilder.from(originalEmbed)
     .setColor(0xe74c3c)
-    .spliceFields(6, 1, { name: "Status", value: `❌ Denied\n\n**Reason:** ${reason}` });
+    .spliceFields(statusIndex, 1, { name: "Status", value: `❌ Denied\n\n**Reason:** ${reason}` });
 
   await interaction.message.edit({ embeds: [updatedEmbed], components: [] });
 
-  await sendApplicantDm(
-    interaction,
-    `❌ Your affiliate application was denied.\n\n**Reason:** ${reason}`
-  );
+  const denialEmbed = new EmbedBuilder()
+    .setTitle("📝 Partnership application update")
+    .setDescription("Your partnership request has been denied.")
+    .setColor(0xe74c3c)
+    .addFields({ name: "Reason", value: reason })
+    .setFooter({ text: "FSRI Partnerships" });
 
-  await interaction.editReply({ content: "✅ Succesfully Denied The application With a Reason " });
+  await sendApplicantDm(interaction, { embeds: [denialEmbed] });
+
+  await interaction.editReply?.({ content: "✅ Successfully denied the application with a reason." });
+}
+
+// ─────────────────────────────────────────────
+// 6b. CREATE PARTNER FORUM POST (called on Accept)
+// ─────────────────────────────────────────────
+async function createPartnerForumPost(interaction, originalEmbed) {
+  const { forumChannelId } = getForumConfig();
+  if (!forumChannelId) {
+    console.error("FORUM_CHANNEL_ID is not set in .env — skipping forum post.");
+    return;
+  }
+
+  const forumChannel = await interaction.client.channels.fetch(forumChannelId).catch(() => null);
+  if (!forumChannel || forumChannel.type !== ChannelType.GuildForum) {
+    console.error("FORUM_CHANNEL_ID does not point to a valid forum channel.");
+    return;
+  }
+
+  const applicantId = getApplicantIdFromInteraction(interaction);
+  const applicant = applicantId ? await interaction.client.users.fetch(applicantId).catch(() => null) : null;
+  const member =
+    applicantId && interaction.guild ? await interaction.guild.members.fetch(applicantId).catch(() => null) : null;
+
+  const serverName = getEmbedFieldValue(originalEmbed, "Server Name") || "Unknown Server";
+  const inviteLink = getEmbedFieldValue(originalEmbed, "Invite Link") || "Not provided";
+  const robloxGroupLink = getEmbedFieldValue(originalEmbed, "Roblox Group Link") || "Not provided";
+  const serverIcon = originalEmbed.thumbnail?.url; // pulled from the invite link when the application was submitted, or the applicant's avatar as a fallback
+
+  // Role color doubles as the container's accent bar — the closest Components V2
+  // gets to a colored "background" for the card.
+  const roleColor = member?.roles?.highest?.color || 0x2f3136;
+
+  const container = new ContainerBuilder()
+    .setAccentColor(roleColor)
+    .addSectionComponents(
+      new SectionBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(`## 🤝 ${serverName}\nNewly accepted partner server`)
+        )
+        .setThumbnailAccessory(
+          new ThumbnailBuilder().setURL(serverIcon || applicant?.displayAvatarURL({ size: 256 }))
+        )
+    )
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small))
+    .addTextDisplayComponents(
+      // A plain <@id> mention is enough — Discord automatically renders it as a
+      // rounded chip with the person's avatar and their highest role's color.
+      new TextDisplayBuilder().setContent(`**Owner**\n${applicant ?? "Unknown"}`)
+    )
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small))
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`**Server Link**\n${inviteLink}`),
+      new TextDisplayBuilder().setContent(`**Roblox Group**\n${robloxGroupLink}`)
+    );
+
+  try {
+    await forumChannel.threads.create({
+      name: serverName.slice(0, 100),
+      message: {
+        flags: MessageFlags.IsComponentsV2,
+        components: [container],
+      },
+    });
+  } catch (error) {
+    // Most likely cause: the auto-fetched server icon URL was invalid or unreachable.
+    // Retry once without the custom server icon so the post still goes out.
+    console.error("Forum post failed, retrying without custom server icon:", error);
+    container.spliceComponents(0, 1,
+      new SectionBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(`## 🤝 ${serverName}\nNewly accepted partner server`)
+        )
+        .setThumbnailAccessory(
+          new ThumbnailBuilder().setURL(applicant?.displayAvatarURL({ size: 256 }) ?? "https://cdn.discordapp.com/embed/avatars/0.png")
+        )
+    );
+    await forumChannel.threads.create({
+      name: serverName.slice(0, 100),
+      message: {
+        flags: MessageFlags.IsComponentsV2,
+        components: [container],
+      },
+    });
+  }
 }
 
 // ─────────────────────────────────────────────
 // 7. HANDLE ACCEPT / DENY DECISION
 // ─────────────────────────────────────────────
 async function handleDecision(interaction, decision) {
-  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  if (interaction.replied || interaction.deferred) {
+    await interaction.followUp({ content: "Processing your decision...", flags: MessageFlags.Ephemeral });
+  } else {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  }
 
   const originalEmbed = interaction.message.embeds[0];
+  const statusIndex = originalEmbed.fields.findIndex((f) => f.name === "Status");
   let updatedEmbed;
 
   if (decision === "accept") {
     updatedEmbed = EmbedBuilder.from(originalEmbed)
       .setColor(0x2ecc71)
-      .spliceFields(6, 1, { name: "Status", value: "✅ Accepted" });
+      .spliceFields(statusIndex, 1, { name: "Status", value: "✅ Accepted" });
   } else {
     updatedEmbed = EmbedBuilder.from(originalEmbed)
       .setColor(0xe74c3c)
-      .spliceFields(6, 1, { name: "Status", value: "❌ Denied" });
+      .spliceFields(statusIndex, 1, { name: "Status", value: "❌ Denied" });
   }
 
   await interaction.message.edit({ embeds: [updatedEmbed], components: [] });
 
-  let dmMessage = "";
   if (decision === "accept") {
-    dmMessage = "🎉 Congratulations! Your affiliate application has been **accepted**!";
-  } else {
-    dmMessage =
-      "❌ Unfortunately, your affiliate application has been **denied**. We appreciate your interest and encourage you to apply again in the future!";
+    await createPartnerForumPost(interaction, originalEmbed).catch((error) => {
+      console.error("Failed to create partner forum post:", error);
+    });
   }
 
-  await sendApplicantDm(interaction, dmMessage);
+  const notificationEmbed = new EmbedBuilder()
+    .setTitle(decision === "accept" ? "🎉 Partnership application accepted" : "⚠️ Partnership application update")
+    .setDescription(
+      decision === "accept"
+        ? "Congratulations! Your partnership request has been accepted. We’re excited to work with you."
+        : "Unfortunately, your partnership request was not approved at this time. We appreciate your interest and encourage you to apply again in the future."
+    )
+    .setColor(decision === "accept" ? 0x2ecc71 : 0xe74c3c)
+    .setFooter({ text: "FSRI Partnerships" });
 
-  await interaction.editReply({
+  await sendApplicantDm(interaction, { embeds: [notificationEmbed] });
+
+  await interaction.editReply?.({
     content: `✅ Application ${decision === "accept" ? "accepted" : "denied"}.`,
   });
 }
@@ -357,7 +542,7 @@ async function handleDecision(interaction, decision) {
 // EXPORT — call handleApplicationInteractions() in your interactionCreate listener
 // ─────────────────────────────────────────────
 module.exports = {
-  ...affiliateCommand,
+  ...partnershipCommand,
   postApplicationEmbed,
   handleApplicationInteractions,
 };
