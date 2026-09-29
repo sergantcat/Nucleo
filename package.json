@@ -1,6 +1,6 @@
 {
   "name": "nucleo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,8 @@
   "type": "commonjs",
   "dependencies": {
     "discord.js": "^14.27.0",
-    "dotenv": "^17.4.2"
-  },
-  "devDependencies": {}
+    "dotenv": "^17.4.2",
+    "knex": "^3.3.0",
+    "pg": "^8.23.0"
+  }
 }

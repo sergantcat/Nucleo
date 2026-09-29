@@ -3,7 +3,9 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
+  ContainerBuilder,
+  TextDisplayBuilder,
+  MessageFlags,
 } = require('discord.js');
 
 const CHOICES = {
@@ -29,8 +31,13 @@ module.exports = {
     );
 
     const message = await interaction.reply({
-      content: 'Choose your weapon!',
-      components: [row],
+      components: [
+        new ContainerBuilder()
+          .setAccentColor(0x5865f2)
+          .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Rock, Paper, Scissors\nChoose your weapon!'))
+          .addActionRowComponents(row),
+      ],
+      flags: MessageFlags.IsComponentsV2,
       withResponse: true,
     });
 
@@ -53,25 +60,27 @@ module.exports = {
         result = 'You lose! 😢';
       }
 
-      const embed = new EmbedBuilder()
-        .setColor(
+      const resultContainer = new ContainerBuilder()
+        .setAccentColor(
           result.includes('win') ? 0x57f287 : result.includes('lose') ? 0xed4245 : 0xfee75c
         )
-        .setTitle('Rock Paper Scissors')
-        .addFields(
-          { name: 'You', value: `${CHOICES[playerChoice].emoji} ${playerChoice}`, inline: true },
-          { name: 'Bot', value: `${CHOICES[botChoice].emoji} ${botChoice}`, inline: true }
-        )
-        .setDescription(`**${result}**`);
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### Rock, Paper, Scissors\n**${result}**\n\n**You:** ${CHOICES[playerChoice].emoji} ${playerChoice}\n**Bot:** ${CHOICES[botChoice].emoji} ${botChoice}`
+          )
+        );
 
-      await i.update({ content: null, embeds: [embed], components: [] });
+      await i.update({ components: [resultContainer] });
     });
 
     collector.on('end', async (collected) => {
       if (collected.size === 0) {
         await interaction.editReply({
-          content: '⏱️ You didn\'t choose in time!',
-          components: [],
+          components: [
+            new ContainerBuilder()
+              .setAccentColor(0xfee75c)
+              .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Rock, Paper, Scissors\n⏱️ You didn\'t choose in time!')),
+          ],
         }).catch(() => {});
       }
     });

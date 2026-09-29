@@ -14,6 +14,7 @@ const fs = require('fs');
 const { reportStatus } = require('./statusReporter.js');
 const path = require('path');
 const { handleDmReplyButton, handleDmReplyModal } = require('./handlers/dmReplyHandler');
+const db = require('./db')
 
 const client = new Client({
     intents: [
@@ -86,10 +87,10 @@ client.once('ready', () => {
     reportStatus('nucleo', 'online');
     setInterval(() => reportStatus('nucleo', 'online'), 60000);
 });
-<<<<<<< HEAD
 
-=======
->>>>>>> 9303cdcee89e0781dc5e58703a56c06fc1b947a9
+
+
+
 process.on('SIGINT', async () => {
     await reportStatus('nucleo', 'offline');
     process.exit();
@@ -98,11 +99,7 @@ process.on('SIGINT', async () => {
 client.on('interactionCreate', async interaction => {
     console.log('Interaction received:', interaction.type, interaction.commandName ?? interaction.customId ?? '(unknown)');
 
-<<<<<<< HEAD
-    // DM reply flow
-=======
     // DM reply flow (button in a user's DMs, and the modal it opens)
->>>>>>> 9303cdcee89e0781dc5e58703a56c06fc1b947a9
     if (interaction.isButton() && interaction.customId.startsWith('dmreply_')) {
         return handleDmReplyButton(interaction);
     }
