@@ -140,31 +140,35 @@ const partnershipCommand = {
 // ─────────────────────────────────────────────
 function buildPartnershipPromptComponents() {
   return new ContainerBuilder()
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent("## FSRI Partnership Programm 🤝")
+    .setAccentColor(15855856)
+    .addTextDisplayComponents((textDisplay) => textDisplay
+        .setContent("# F.S.R.I Affiliation Programm")
     )
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        "Hello Here you can Apply For partnerships with FSRI, By Partnering With Us you can Recive Some benefits Stated Below Also We Will be Happy If You Will Partner With Us."
-      )
+    .addSeparatorComponents((separator) => separator
+        .setDivider(true)
+        .setSpacing(SeparatorSpacingSize.Large)
     )
-    .addSeparatorComponents(
-      new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small)
+    .addTextDisplayComponents((textDisplay) => textDisplay
+        .setContent("### Greetings\nHere you can Apply to be an F.S.R.I affiliate.")
     )
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        "### What Are The Benefits?\n- Announcments From Your Server Will get Posted in The Partnership Announcments Channel\n- Development And Other Sneek Peeks will be Posted in Partnerships Development channel\n- W.I.P You will also Recive A Headtag in game"
-      )
+    .addSeparatorComponents((separator) => separator
+        .setDivider(true)
+        .setSpacing(SeparatorSpacingSize.Small)
     )
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        "\n- You can View The Requirements in the <#1523058659817689158> Channel."
-      )
+    .addTextDisplayComponents((textDisplay) => textDisplay
+        .setContent("If your application Gets accepted, you will recive Some benefits :\nHead Tag In Game\nAn Affiliate Representative Role\nAll announcments and Development progress from your group will be posted in affiliate channels.")
     )
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        "> Ready to begin? Tap the button below to submit your partnership application."
-      )
+    .addSeparatorComponents((separator) => separator
+        .setDivider(true)
+    )
+    .addTextDisplayComponents((textDisplay) => textDisplay
+        .setContent("**Want to apply?**\nPress the Button Below to Start The Application Process.")
+    )
+    .addSeparatorComponents((separator) => separator
+        .setDivider(true)
+    )
+    .addTextDisplayComponents((textDisplay) => textDisplay
+        .setContent("-# Nucleo")
     );
 }
 
@@ -175,8 +179,7 @@ async function postApplicationEmbed(channel) {
     new ButtonBuilder()
       .setCustomId(IDS.applyButton)
       .setLabel("Apply")
-      .setEmoji({ id: "1532792685243400385", name: "partnership" })
-      .setStyle(ButtonStyle.Primary)
+      .setStyle(ButtonStyle.Success)
   );
 
   await channel.send({
@@ -234,7 +237,7 @@ async function showApplicationModal(interaction) {
 
   const memberCount = new TextInputBuilder()
     .setCustomId("member_count")
-    .setLabel("Server member count")
+    .setLabel("Server members count")
     .setStyle(TextInputStyle.Short)
     .setRequired(true);
 
@@ -246,7 +249,7 @@ async function showApplicationModal(interaction) {
 
   const whyPartnership = new TextInputBuilder()
     .setCustomId("why_partnership")
-    .setLabel("Why partner with us?")
+    .setLabel("Why do you want to partner with us?")
     .setStyle(TextInputStyle.Paragraph)
     .setRequired(true);
 
@@ -300,8 +303,8 @@ async function handleApplicationSubmit(interaction) {
   }
 
   const reviewEmbed = new EmbedBuilder()
-    .setTitle("🤝 New Partnership Application")
-    .setDescription("A new partnership request has been submitted and is awaiting review.")
+    .setTitle("New Affiliate Application")
+    .setDescription("A new affiliate request has been submitted and is awaiting review.")
     .setColor(0xffc857)
     .addFields(
       { name: "Applicant", value: `${interaction.user} (${interaction.user.id})`, inline: false },
@@ -341,10 +344,10 @@ async function handleApplicationSubmit(interaction) {
   });
 
   const confirmationEmbed = new EmbedBuilder()
-    .setTitle("✅ Partnership request received")
+    .setTitle("✅ Affiliate request received")
     .setDescription("Thank you for reaching out. Your application has been submitted and our team will review it shortly.")
     .setColor(0x2ecc71)
-    .setFooter({ text: "FSRI Partnerships" });
+    .setFooter({ text: "FSRI Affiliates" });
 
   await interaction.editReply?.({
     embeds: [confirmationEmbed],
@@ -358,7 +361,7 @@ async function showDenyReasonModal(interaction) {
   const userId = interaction.customId.split("_").pop();
   const modal = new ModalBuilder()
     .setCustomId(`${IDS.denyReasonModal}_${userId}`)
-    .setTitle("Deny Partnership with Reason");
+    .setTitle("Deny Affiliate Application with Reason");
 
   const reason = new TextInputBuilder()
     .setCustomId("deny_reason")
@@ -394,11 +397,11 @@ async function handleDenyReasonSubmit(interaction) {
   await interaction.message.edit({ embeds: [updatedEmbed], components: [] });
 
   const denialEmbed = new EmbedBuilder()
-    .setTitle("📝 Partnership application update")
-    .setDescription("Your partnership request has been denied.")
+    .setTitle("📝 Affiliate application update")
+    .setDescription("Your affiliate request has been denied.")
     .setColor(0xe74c3c)
     .addFields({ name: "Reason", value: reason })
-    .setFooter({ text: "FSRI Partnerships" });
+    .setFooter({ text: "FSRI Affiliates" });
 
   await sendApplicantDm(interaction, { embeds: [denialEmbed] });
 
@@ -440,7 +443,7 @@ async function createPartnerForumPost(interaction, originalEmbed) {
     .addSectionComponents(
       new SectionBuilder()
         .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`## 🤝 ${serverName}\nNewly accepted partner server`)
+          new TextDisplayBuilder().setContent(`## ${serverName}\n New Affiliate`)
         )
         .setThumbnailAccessory(
           new ThumbnailBuilder().setURL(serverIcon || applicant?.displayAvatarURL({ size: 256 }))
@@ -473,7 +476,7 @@ async function createPartnerForumPost(interaction, originalEmbed) {
     container.spliceComponents(0, 1,
       new SectionBuilder()
         .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`## 🤝 ${serverName}\nNewly accepted partner server`)
+          new TextDisplayBuilder().setContent(`## ${serverName}\n New Affiliate`)
         )
         .setThumbnailAccessory(
           new ThumbnailBuilder().setURL(applicant?.displayAvatarURL({ size: 256 }) ?? "https://cdn.discordapp.com/embed/avatars/0.png")
@@ -522,14 +525,14 @@ async function handleDecision(interaction, decision) {
   }
 
   const notificationEmbed = new EmbedBuilder()
-    .setTitle(decision === "accept" ? "🎉 Partnership application accepted" : "⚠️ Partnership application update")
+    .setTitle(decision === "accept" ? "🎉 Affiliate application accepted" : "⚠️ Affiliate application update")
     .setDescription(
       decision === "accept"
-        ? "Congratulations! Your partnership request has been accepted. We’re excited to work with you."
-        : "Unfortunately, your partnership request was not approved at this time. We appreciate your interest and encourage you to apply again in the future."
+        ? "Congratulations! Your affiliate request has been accepted. We’re excited to work with you."
+        : "Unfortunately, your affiliate request was not approved at this time. We appreciate your interest and encourage you to apply again in the future."
     )
     .setColor(decision === "accept" ? 0x2ecc71 : 0xe74c3c)
-    .setFooter({ text: "FSRI Partnerships" });
+    .setFooter({ text: "FSRI Affiliates" });
 
   await sendApplicantDm(interaction, { embeds: [notificationEmbed] });
 
