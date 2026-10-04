@@ -99,6 +99,19 @@ process.on('SIGINT', async () => {
 client.on('interactionCreate', async interaction => {
     console.log('Interaction received:', interaction.type, interaction.commandName ?? interaction.customId ?? '(unknown)');
 
+    if (interaction.isAutocomplete()) {
+        const command = client.commands.get(interaction.commandName);
+        if (!command?.autocomplete) return;
+
+        try {
+            await command.autocomplete(interaction);
+        } catch (error) {
+            console.error('Autocomplete execution failed:', error);
+            await interaction.respond([]);
+        }
+        return;
+    }
+
     // DM reply flow (button in a user's DMs, and the modal it opens)
     if (interaction.isButton() && interaction.customId.startsWith('dmreply_')) {
         return handleDmReplyButton(interaction);
