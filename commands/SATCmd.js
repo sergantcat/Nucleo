@@ -18,6 +18,20 @@ module.exports = {
       o
       .setName('user')
       .setDescription('User to add to the db and rank')
-      )
+      .setRequired(true)
+      .addStringOption(o=>
+        o 
+          .setName('rank')
+          .setDescription('Rank you want to add to the user')
+          .setRequired(true)
+          .addChoices( 
+                { name: 'Senior Mod', value: 'senior_mod' },
+				        { name: 'Mod', value: 'mod' },
+				        { name: 'Junior Mod', value: 'junior_mod' },
+            )             
       
-                )          
+                )
+                   .addSubcommand(sub=>
+                     sub
+                                  .setName('remove')
+                                  .setDescription
