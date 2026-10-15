@@ -1,8 +1,8 @@
-const{SlashCommandBuilder,ContainerBuilder,SeparatorBuilder,ActionRowBuilder,PermissionFlagsBits,MessageFlags,SeparatorSpacingSize,ButtonBuilder,ButtonStyle,TextDisplayBuilder} = require('discord.js')
+const{SlashCommandBuilder,ContainerBuilder,SeparatorBuilder,ModalBulder,TextInputBuilder,ActionRowBuilder,PermissionFlagsBits,MessageFlags,SeparatorSpacingSize,ButtonBuilder,ButtonStyle,TextDisplayBuilder} = require('discord.js')
 
 const randomUUIID = require('crypto')
 const knex = require('../db')
-connt LOA_REQUEST_CHANNEL_ID = process.env.LOA_REQUEST_CHANNEL_ID
+const LOA_REQUEST_CHANNEL_ID = process.env.LOA_REQUEST_CHANNEL_ID
 const LOA_ROLE_ID = process.env.LOA_ROLE_ID
 const LOA_LOG_CHANNEL_ID = process.env.LOA_LOG_CHANNEL_ID
 
@@ -50,8 +50,21 @@ module.exports = {
            flags:MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
-        if(subcommannd ==='panel-deploy'){
+        if(subcommand ==='panel-deploy'){
+            const user = interaction.options.getUser('user')
+            const container = new ContainerBuilder()
+            const loachanel = LOA_REQUEST_CHANNEL_ID
+            const loaid  = randomUUIID
+            .setAccentColor(15547576)
+            .addTextDisplayComponents((textDisplay) => textDisplay
+            .setContent('# Loa Requests ')
             
+            
+        )
+
+
+
+
         }
     }
 }
