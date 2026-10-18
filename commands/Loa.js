@@ -52,19 +52,9 @@ module.exports = {
 
         if(subcommand ==='panel-deploy'){
             const user = interaction.options.getUser('user')
-            const container = new ContainerBuilder()
             const loachanel = LOA_REQUEST_CHANNEL_ID
             const loaid  = randomUUIID
-            .setAccentColor(15547576)
-            .addTextDisplayComponents((textDisplay) => textDisplay
-            .setContent('# Loa Requests ')
-            
-            
-        )
-
-
-
-
+           
         }
     }
 }
