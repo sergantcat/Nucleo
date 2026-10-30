@@ -17,7 +17,7 @@ module.exports = {
     const report = interaction.options.getString('issue', true);
 
     const embed = new EmbedBuilder()
-    .setTitle('Nucleo error report by ' + interaction.user.tag)
+    .setTitle('Corelink error report by ' + interaction.user.tag)
     .setColor(0xED4245)
     .addFields(
         { name: 'Issue:', value: report, inline: false },

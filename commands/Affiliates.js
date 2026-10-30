@@ -168,7 +168,7 @@ function buildPartnershipPromptComponents() {
         .setDivider(true)
     )
     .addTextDisplayComponents((textDisplay) => textDisplay
-        .setContent("-# Nucleo")
+        .setContent("-# Corelink")
     );
 }
 

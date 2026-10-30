@@ -83,7 +83,7 @@ const rest = new REST({ version: '10' }).setToken(token);
     }
 })();
 client.once('ready', () => {
-    console.log('Nucleo is online!');
+    console.log('Corelink is online!');
     reportStatus('nucleo', 'online');
     setInterval(() => reportStatus('nucleo', 'online'), 60000);
 });
@@ -92,7 +92,7 @@ client.once('ready', () => {
 
 
 process.on('SIGINT', async () => {
-    await reportStatus('nucleo', 'offline');
+    await reportStatus('corelink', 'offline');
     process.exit();
 });
 

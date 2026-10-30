@@ -138,7 +138,7 @@ module.exports = {
         .setDivider(true)
     )
     .addTextDisplayComponents((textDisplay) => textDisplay
-        .setContent("-# **Nucleo**")
+        .setContent("-# **Corelink**")
     );
             return interaction.reply({ components: [container], ephemeral: true, flags: MessageFlags.Ephemeral.IsComponentsV2 });
         }
@@ -180,7 +180,7 @@ module.exports = {
         .setSpacing(SeparatorSpacingSize.Large)
     )
     .addTextDisplayComponents((textDisplay) => textDisplay
-        .setContent(`-# Nucleo · ${new Date().toLocaleString()}`)
+        .setContent(`-# Corelink · ${new Date().toLocaleString()}`)
     );
 
             await user.send({
@@ -240,7 +240,7 @@ module.exports = {
                 .setSpacing(SeparatorSpacingSize.Small)
             )
             .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                `-# Nucleo · ${new Date().toLocaleString()}`
+                `-# Corelink · ${new Date().toLocaleString()}`
             ));
 
         return interaction.reply({
@@ -286,7 +286,7 @@ module.exports = {
                     .setDivider(true)
                 )
                 .addTextDisplayComponents((textDisplay) => textDisplay
-                    .setContent(  `-# Nucleo · ${new Date().toLocaleString()}`)
+                    .setContent(  `-# Corelink · ${new Date().toLocaleString()}`)
                 );
 
             await user.send({

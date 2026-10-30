@@ -16,7 +16,7 @@ module.exports = {
     async execute(interaction) {
         const component = new ContainerBuilder()
             .addTextDisplayComponents((textDisplay) => textDisplay
-                .setContent("# Nucleo status ")
+                .setContent("# Corelink status ")
             )
             .addSeparatorComponents((separator) => separator
                 .setDivider(true)

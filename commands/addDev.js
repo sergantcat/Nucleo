@@ -78,7 +78,7 @@ module.exports = {
         .setDivider(true)
     )
     .addTextDisplayComponents((textDisplay) => textDisplay
-        .setContent("-# **Nucleo**")
+        .setContent(`interaction.client.username`)
     );
         return interaction.reply({ 
               components:[container],

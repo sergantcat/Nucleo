@@ -38,7 +38,7 @@ module.exports = {
         .setDivider(true)
       )
       .addTextDisplayComponents((textDisplay) => textDisplay
-        .setContent('-# Nucleo')
+        .setContent('-# Corelink')
       );
 
     await channel.send({
