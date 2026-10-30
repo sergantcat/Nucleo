@@ -16,7 +16,7 @@ module.exports = {
     }
 
     const component = new ContainerBuilder()
-      .setAccentColor(5063705)
+      .setAccentColor(16711685)
       .addSectionComponents((section) => section
         .addTextDisplayComponents(
           (textDisplay) => textDisplay
@@ -31,13 +31,13 @@ module.exports = {
         .setSpacing(SeparatorSpacingSize.Large)
       )
       .addTextDisplayComponents((textDisplay) => textDisplay
-        .setContent(`Sad to see you go ${member}, hope to see you later.\nWith this user leaving we have ${member.guild.memberCount}`)
+        .setContent(`Sad to see you go ${member}, hope to see you later.\nWith this user leaving we have ${member.guild.memberCount} Server Members`)
       )
       .addSeparatorComponents((separator) => separator
         .setDivider(true)
       )
       .addTextDisplayComponents((textDisplay) => textDisplay
-        .setContent('-# Corelink')
+        .setContent(`-# ${member.client.user.username}`)
       );
 
     await channel.send({

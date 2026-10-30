@@ -130,7 +130,7 @@ const partnershipCommand = {
     }
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-    await postApplicationEmbed(interaction.channel);
+    await postApplicationEmbed(interaction.channel, interaction.client.user.username);
     await interaction.editReply({ content: "✅ Partnership application prompt posted." });
   },
 };
@@ -138,18 +138,18 @@ const partnershipCommand = {
 // ─────────────────────────────────────────────
 // 1. POST THE INITIAL EMBED (call this from a slash command, e.g. /post-application)
 // ─────────────────────────────────────────────
-function buildPartnershipPromptComponents() {
+function buildPartnershipPromptComponents(botUsername) {
   return new ContainerBuilder()
     .setAccentColor(15855856)
     .addTextDisplayComponents((textDisplay) => textDisplay
-        .setContent("# F.S.R.I Affiliation Programm")
+        .setContent("# H.E.C Affiliation Programm")
     )
     .addSeparatorComponents((separator) => separator
         .setDivider(true)
         .setSpacing(SeparatorSpacingSize.Large)
     )
     .addTextDisplayComponents((textDisplay) => textDisplay
-        .setContent("### Greetings\nHere you can Apply to be an F.S.R.I affiliate.")
+        .setContent("### Greetings\nHere you can Apply to be an affiliate.")
     )
     .addSeparatorComponents((separator) => separator
         .setDivider(true)
@@ -168,12 +168,12 @@ function buildPartnershipPromptComponents() {
         .setDivider(true)
     )
     .addTextDisplayComponents((textDisplay) => textDisplay
-        .setContent("-# Corelink")
+        .setContent(`-# ${botUsername}`)
     );
 }
 
-async function postApplicationEmbed(channel) {
-  const container = buildPartnershipPromptComponents();
+async function postApplicationEmbed(channel, botUsername) {
+  const container = buildPartnershipPromptComponents(botUsername);
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -294,7 +294,7 @@ async function handleApplicationSubmit(interaction) {
 
   const { reviewChannelId, reviewRoleId } = getReviewConfig();
   if (!reviewChannelId || !reviewRoleId) {
-    return interaction.editReply?.({ content: "Partnership review settings are not configured. Set REVIEW_CHANNEL_ID and REVIEW_ROLE_ID in your .env file." });
+    return interaction.editReply?.({ content: "Affiliate review settings are not configured. Set REVIEW_CHANNEL_ID and REVIEW_ROLE_ID in your .env file." });
   }
 
   const reviewChannel = await interaction.client.channels.fetch(reviewChannelId).catch(() => null);
@@ -316,7 +316,7 @@ async function handleApplicationSubmit(interaction) {
       { name: "Status", value: "⏳ Pending Review", inline: false }
     )
     .setThumbnail(serverIcon || interaction.user.displayAvatarURL({ size: 256, dynamic: true }))
-    .setFooter({ text: "FSRI Partnerships" })
+    .setFooter({ text: "H.E.C Partnerships" })
     .setTimestamp();
 
   const row = new ActionRowBuilder().addComponents(
@@ -347,7 +347,7 @@ async function handleApplicationSubmit(interaction) {
     .setTitle("✅ Affiliate request received")
     .setDescription("Thank you for reaching out. Your application has been submitted and our team will review it shortly.")
     .setColor(0x2ecc71)
-    .setFooter({ text: "FSRI Affiliates" });
+    .setFooter({ text: "H.E.C Affiliates" });
 
   await interaction.editReply?.({
     embeds: [confirmationEmbed],
@@ -401,7 +401,7 @@ async function handleDenyReasonSubmit(interaction) {
     .setDescription("Your affiliate request has been denied.")
     .setColor(0xe74c3c)
     .addFields({ name: "Reason", value: reason })
-    .setFooter({ text: "FSRI Affiliates" });
+    .setFooter({ text: "H.E.C Affiliates" });
 
   await sendApplicantDm(interaction, { embeds: [denialEmbed] });
 
@@ -532,7 +532,7 @@ async function handleDecision(interaction, decision) {
         : "Unfortunately, your affiliate request was not approved at this time. We appreciate your interest and encourage you to apply again in the future."
     )
     .setColor(decision === "accept" ? 0x2ecc71 : 0xe74c3c)
-    .setFooter({ text: "FSRI Affiliates" });
+    .setFooter({ text: "H.E.C Affiliates" });
 
   await sendApplicantDm(interaction, { embeds: [notificationEmbed] });
 

@@ -138,7 +138,7 @@ module.exports = {
         .setDivider(true)
     )
     .addTextDisplayComponents((textDisplay) => textDisplay
-        .setContent("-# **Corelink**")
+        .setContent(`-# **${interaction.client.user.username}**`)
     );
             return interaction.reply({ components: [container], ephemeral: true, flags: MessageFlags.Ephemeral.IsComponentsV2 });
         }
@@ -180,7 +180,7 @@ module.exports = {
         .setSpacing(SeparatorSpacingSize.Large)
     )
     .addTextDisplayComponents((textDisplay) => textDisplay
-        .setContent(`-# Corelink · ${new Date().toLocaleString()}`)
+        .setContent(`-# ${interaction.client.user.username} · ${new Date().toLocaleString()}`)
     );
 
             await user.send({
@@ -240,7 +240,7 @@ module.exports = {
                 .setSpacing(SeparatorSpacingSize.Small)
             )
             .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                `-# Corelink · ${new Date().toLocaleString()}`
+                `-# ${interaction.client.user.username} · ${new Date().toLocaleString()}`
             ));
 
         return interaction.reply({
@@ -286,7 +286,7 @@ module.exports = {
                     .setDivider(true)
                 )
                 .addTextDisplayComponents((textDisplay) => textDisplay
-                    .setContent(  `-# Corelink · ${new Date().toLocaleString()}`)
+                    .setContent(  `-# ${interaction.client.user.username} · ${new Date().toLocaleString()}`)
                 );
 
             await user.send({

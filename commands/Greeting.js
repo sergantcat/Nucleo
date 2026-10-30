@@ -38,7 +38,7 @@ module.exports = {
         .setDivider(true)
       )
       .addTextDisplayComponents((textDisplay) => textDisplay
-        .setContent('-# Corelink')
+        .setContent(`-# ${member.client.user.username}`)
       );
 
     await channel.send({
