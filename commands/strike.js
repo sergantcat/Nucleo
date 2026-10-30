@@ -73,23 +73,20 @@ module.exports = {
         }
 
         const user = interaction.options.getUser("user");
-        const query = String(focusedOption.value ?? "").trim().toLowerCase();
-        let strikeQuery = db("strikes")
-            .select("id", "reason", "date", "user")
-            .orderBy("date", "desc");
-
-        if (user) {
-            strikeQuery = strikeQuery.where({ user: user.id });
-        } else {
-            strikeQuery = strikeQuery.limit(100);
+        if (!user) {
+            return interaction.respond([]);
         }
 
-        const strikes = await strikeQuery;
+        const query = String(focusedOption.value ?? "").trim().toLowerCase();
+        const strikes = await db("strikes")
+            .select("id", "reason", "date", "user")
+            .where({ user: user.id })
+            .orderBy("date", "desc");
 
         const choices = strikes
             .map((strike) => ({
                 strike,
-                name: `#${strike.id} - ${String(strike.reason ?? "No reason provided")}${user ? "" : ` (User ${strike.user})`}`,
+                name: `#${strike.id} - ${String(strike.reason ?? "No reason provided")}`,
             }))
             .filter(({ strike, name }) =>
                 `${name} ${strike.id} ${strike.reason ?? ""}`.toLowerCase().includes(query)
