@@ -10,9 +10,10 @@ module.exports = {
       return;
     }
 
-    const channel = await member.guild.channels.fetch(channelId).catch(() => null);
-    if (!channel) {
-      console.error(`Could not resolve channel with ID ${channelId}`);
+    const channel = member.guild.channels.cache.get(channelId)
+      ?? await member.guild.channels.fetch(channelId);
+    if (!channel?.isTextBased() || typeof channel.send !== 'function') {
+      console.error(`Welcome channel ${channelId} is unavailable or cannot send messages`);
       return;
     }
 

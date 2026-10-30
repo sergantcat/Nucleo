@@ -48,10 +48,17 @@ if (fs.existsSync(eventsPath)) {
     for (const file of eventFiles) {
         const event = require(path.join(eventsPath, file));
         if (!event?.name || !event?.execute) continue;
+        const executeEvent = async (...args) => {
+            try {
+                await event.execute(...args);
+            } catch (error) {
+                console.error(`Event ${event.name} execution failed:`, error);
+            }
+        };
         if (event.once) {
-            client.once(event.name, (...args) => event.execute(...args));
+            client.once(event.name, (...args) => executeEvent(...args));
         } else {
-            client.on(event.name, (...args) => event.execute(...args));
+            client.on(event.name, (...args) => executeEvent(...args));
         }
         console.log(`Loaded event: ${event.name}`);
     }
